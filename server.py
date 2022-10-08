@@ -1,3 +1,4 @@
+import pprint
 from flask import Flask, render_template, request
 
 from pprint import pformat
@@ -34,30 +35,42 @@ def show_afterparty_form():
 def find_afterparties():
     """Search for afterparties on Eventbrite"""
 
-    keyword = request.args.get('keyword', '')
-    postalcode = request.args.get('zipcode', '')
-    radius = request.args.get('radius', '')
-    unit = request.args.get('unit', '')
-    sort = request.args.get('sort', '')
+    keyword = request.args.get('keyword')
+    postalcode = request.args.get('zipcode')
+    radius = request.args.get('radius')
+    unit = request.args.get('unit')
+    sort = request.args.get('sort')
 
     url = 'https://app.ticketmaster.com/discovery/v2/events'
     payload = {'apikey': API_KEY}
 
-    # TODO: Make a request to the Event Search endpoint to search for events
-    #
-    # - Use form data from the user to populate any search parameters
-    #
+    # add to payload
+    if keyword:
+        payload["keyword"] = keyword
+
+    if postalcode:
+        payload["zipcode"] = postalcode
+
+    if radius:
+        payload["radius"] = radius
+
+    if unit:
+        payload["unit"] = unit
+
+    if sort:
+        payload["sort"] = sort
+
+    print("*******"*10)
+    print(payload)
+
+    res = requests.get(url, params=payload)
+
     # - Make sure to save the JSON data from the response to the `data`
-    #   variable so that it can display on the page. This is useful for
-    #   debugging purposes!
-    #
-    # - Replace the empty list in `events` with the list of events from your
-    #   search results
 
-    data = {'Test': ['This is just some test data'],
-            'page': {'totalElements': 1}}
-    events = []
-
+    data = res.json()
+    
+    events = data['_embedded']['events']
+    
     return render_template('search-results.html',
                            pformat=pformat,
                            data=data,
